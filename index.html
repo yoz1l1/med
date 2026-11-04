@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MED Departaments</title>
+<style>
+@font-face{font-family:Mont;font-weight:500;src:url(fonts/montserrat-cyrillic-500-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;font-display:swap}
+@font-face{font-family:Mont;font-weight:500;src:url(fonts/montserrat-latin-500-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap}
+@font-face{font-family:Mont;font-weight:700;src:url(fonts/montserrat-cyrillic-700-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;font-display:swap}
+@font-face{font-family:Mont;font-weight:700;src:url(fonts/montserrat-latin-700-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap}
+@font-face{font-family:Mont;font-weight:800;src:url(fonts/montserrat-cyrillic-800-normal.woff2) format('woff2');unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116;font-display:swap}
+@font-face{font-family:Mont;font-weight:800;src:url(fonts/montserrat-latin-800-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;font-display:swap}
+:root{color-scheme:dark;--bg:#19191b;--p1:#2a2829;--p2:#1c1c1e;--red:#e0393e;--red2:#b82a31;--tx:#f2efef;--mu:#9b9697;--line:rgba(255,255,255,.08);--ok:#7fd1a0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 700px at 70% -10%,#2b2829,#19191b 60%);color:var(--tx);font:500 15px/1.6 Mont,system-ui,'Segoe UI',Arial,sans-serif;min-height:100vh;padding:24px 18px 50px}
+.panel{max-width:1100px;margin:0 auto;border-radius:16px;background:linear-gradient(135deg,var(--p1),var(--p2));border:1px solid var(--line);box-shadow:0 30px 70px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.04);position:relative;overflow:hidden;min-height:560px}
+nav{display:flex;align-items:center;gap:34px;padding:26px 38px;position:relative;z-index:5;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.14em;font-size:13px;cursor:pointer}
+.mark{width:26px;height:26px;position:relative}.mark i{position:absolute;left:0;right:0;height:6px;border-radius:2px;background:linear-gradient(90deg,var(--red),#ff6d6d);transform:skewX(-35deg)}.mark i:nth-child(1){top:2px}.mark i:nth-child(2){top:10px;opacity:.8}.mark i:nth-child(3){top:18px;opacity:.55}
+nav a{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;cursor:pointer;color:#fff;opacity:.85;transition:opacity .2s,color .2s}nav a:hover{opacity:1;color:#ff7b7f}nav .sp{flex:1}
+#snd{font-size:17px;cursor:pointer;user-select:none;opacity:.8;transition:transform .2s}#snd:active{transform:scale(.85)}
+.view{animation:in .5s cubic-bezier(.2,.7,.2,1) both}@keyframes in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.hero{position:relative;padding:50px 38px 90px;min-height:470px}
+.hero .txt{position:relative;z-index:3;max-width:480px}
+.lab{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;color:#e9e4e4}
+.hero h1{font-size:clamp(34px,5vw,52px);line-height:1.02;margin:12px 0 18px;font-weight:800;letter-spacing:-.01em}
+.hero p{color:#d8d2d3;font-size:14px;max-width:420px;margin:0 0 30px}
+.slide{animation:in .6s cubic-bezier(.2,.7,.2,1) both}
+.art{position:absolute;right:-40px;top:10px;width:min(520px,52%);aspect-ratio:1;z-index:1;pointer-events:none}.art svg{width:100%;height:100%;display:block}
+.half{position:absolute;left:36%;bottom:-70px;width:150px;height:150px;border-radius:50%;background:linear-gradient(#ef4a4a,#c12e34);z-index:2;pointer-events:none}
+.prog{position:absolute;left:38px;bottom:30px;z-index:4;display:flex;align-items:center;gap:14px;font-size:12px;font-weight:700}
+.prog b{display:block;width:200px;height:2px;background:rgba(255,255,255,.18);position:relative;overflow:hidden;font-weight:400}.prog b i{position:absolute;inset:0;background:#fff;transform-origin:left;animation:fill 6s linear forwards}@keyframes fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.go{display:inline-flex;align-items:center;gap:16px;cursor:pointer;font-weight:700;font-size:14px;border:0;background:none;color:#fff;padding:0;font-family:inherit}
+.go span{width:60px;height:60px;border-radius:50%;border:1px solid rgba(255,255,255,.35);display:grid;place-items:center;font-size:22px;transition:transform .25s cubic-bezier(.2,.8,.2,1),background .25s,border-color .25s;box-shadow:0 0 0 8px rgba(255,255,255,.03)}
+.go:hover span{background:var(--red);border-color:var(--red);transform:translateX(4px)}.go:active span{transform:scale(.9)}
+.btn{position:relative;overflow:hidden;border:0;border-radius:999px;padding:13px 28px;font:700 12px Mont,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#ef4a4a,var(--red2));cursor:pointer;box-shadow:0 8px 22px rgba(224,57,62,.3);transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .25s,filter .2s,opacity .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(224,57,62,.42)}.btn:active{transform:scale(.95) translateY(0);box-shadow:0 4px 12px rgba(224,57,62,.3)}
+.btn.ghost{background:rgba(255,255,255,.04);box-shadow:none;border:1px solid var(--line)}.btn.ghost:hover{background:rgba(255,255,255,.09);box-shadow:none}.btn.sm{padding:8px 16px;font-size:11px}.btn:disabled{opacity:.45;cursor:wait;transform:none}
+.rip{position:absolute;border-radius:50%;background:rgba(255,255,255,.4);transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}@keyframes rip{to{transform:scale(3);opacity:0}}
+.sec{padding:20px 38px 44px}.sec h2{font-size:30px;font-weight:800;margin:0 0 6px}.sec .sub{color:var(--mu);margin:0 0 24px;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.card{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:14px;padding:20px;transition:transform .25s cubic-bezier(.2,.8,.2,1),border-color .25s,background .25s}
+.card.click{cursor:pointer}.card.click:hover{transform:translateY(-4px);border-color:rgba(224,57,62,.55);background:rgba(224,57,62,.07)}.card.click:active{transform:scale(.97)}
+.card h3{margin:0 0 6px;font-size:16px;font-weight:800}.card small{color:var(--mu);display:block;font-size:12px;line-height:1.5}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--red);margin-right:8px}
+label{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);margin:16px 0 6px;font-weight:700}
+input,select,textarea{width:100%;background:rgba(0,0,0,.28);border:1px solid var(--line);color:var(--tx);padding:12px 14px;font:500 14px Mont,sans-serif;border-radius:10px;transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--red);box-shadow:0 0 0 3px rgba(224,57,62,.18)}textarea{resize:vertical;min-height:90px}select option{background:#222}
+.form{max-width:520px;margin:0 auto;padding:10px 0}.form h2{margin-bottom:4px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}.seg button{flex:1;min-width:140px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--tx);padding:11px 12px;border-radius:10px;font:700 12px Mont,sans-serif;cursor:pointer;transition:all .2s}.seg button:active{transform:scale(.95)}.seg button.on{background:rgba(224,57,62,.18);border-color:var(--red)}
+.err+.btn{margin-top:10px}.err{color:#ff8f93;min-height:22px;margin-top:12px;font-size:13px}.okmsg{color:var(--ok)}.mu{color:var(--mu)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 22px}.tabs button{background:none;border:1px solid var(--line);color:var(--tx);padding:9px 18px;border-radius:999px;font:700 11px Mont,sans-serif;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s}.tabs button:hover{background:rgba(255,255,255,.06)}.tabs button:active{transform:scale(.94)}.tabs button.on{background:var(--red);border-color:var(--red)}
+.chip{display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}th{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);text-align:left;padding:8px}td{padding:10px 8px;border-top:1px solid var(--line);vertical-align:top}
+.pill{padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid var(--line)}.pill.sent{color:var(--ok);border-color:rgba(127,209,160,.4)}.pill.failed{color:#ff8f93;border-color:rgba(255,143,147,.4)}
+details{border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:10px;background:rgba(255,255,255,.03)}details summary{cursor:pointer;font-weight:700;font-size:14px}details[open]{border-color:rgba(224,57,62,.4)}
+.kv{margin:10px 0 0}.kv b{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--mu)}.kv p{margin:2px 0 10px;white-space:pre-wrap}
+code,.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;user-select:all;word-break:break-all}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>*{flex:0 0 auto}
+@media(max-width:760px){nav{padding:20px;gap:18px}.hero{padding:30px 22px 100px}.sec{padding:14px 20px 36px}.art{right:-90px;top:60px;width:90%;opacity:.35}.prog{left:22px}.half{display:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+<div class="panel"><nav><div class="brand" id="brand"><div class="mark"><i></i><i></i><i></i></div>MED&nbsp;DEPARTAMENTS</div><a data-go="home">О портале</a><a data-go="depts">Отделы</a><a id="nav-auth" data-go="login">Войти</a><span class="sp"></span><span id="who" class="mu" style="font-size:12px"></span><span id="snd" title="Звук">🔊</span></nav><div id="app"></div></div>
+<script>
+const $=s=>document.querySelector(s),app=$('#app');
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let CFG=null,VAULT=null,ROLES={},S=null,heroT=null;try{S=JSON.parse(sessionStorage.getItem('medsess'))}catch(e){}
+const saveS=()=>{try{S?sessionStorage.setItem('medsess',JSON.stringify(S)):sessionStorage.removeItem('medsess')}catch(e){}};
+// ---- шифрование (WebCrypto): ключи в коде не хранятся, в vault.json лежат только зашифрованные блоки ----
+const te=new TextEncoder(),td=new TextDecoder();
+const b64=u=>{let s='';u.forEach(c=>s+=String.fromCharCode(c));return btoa(s)},unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const derive=async(key,salt)=>{const m=await crypto.subtle.importKey('raw',te.encode(key),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:200000,hash:'SHA-256'},m,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])};
+async function seal(key,obj){const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12)),k=await derive(key,salt);const c=await crypto.subtle.encrypt({name:'AES-GCM',iv},k,te.encode(JSON.stringify(obj)));return{s:b64(salt),i:b64(iv),c:b64(new Uint8Array(c))}}
+async function unseal(key,e){try{const k=await derive(key,unb64(e.s));return JSON.parse(td.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(e.i)},k,unb64(e.c))))}catch(x){return null}}
+const AL='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*?+=-',genKey=()=>{const a=new Uint32Array(36);crypto.getRandomValues(a);return[...a].map(x=>AL[x%AL.length]).join('')};
+async function buildVault(keys,wh){const entries=[];for(const r of Object.keys(ROLES)){const R=ROLES[r];let hooks={};if(R.kind==='admin')hooks={...wh};else if(wh[R.dept])hooks={[R.dept]:wh[R.dept]};const p={role:r,webhooks:hooks};if(r==='chief')p.keys=keys;entries.push({r,...await seal(keys[r],p)})}return{v:1,entries}}
+// ---- звук и анимация нажатия ----
+let AC=null,mute=false;try{mute=localStorage.getItem('medmute')==='1'}catch(e){}
+const tone=(f,d=.08,v=.05,t0=0,to)=>{if(mute)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain(),t=AC.currentTime+t0;o.type='sine';o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(to||f*.82,t+d);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d+.02)}catch(e){}};
+const sOk=()=>{tone(620,.1,.05);tone(830,.14,.05,.09)},sErr=()=>tone(180,.22,.06,0,120);
+document.addEventListener('click',e=>{const t=e.target.closest('button,.card.click,nav a,.go');if(!t)return;tone(t.classList.contains('ghost')?420:560,.07,.045);
+ if(t.classList.contains('btn')){const r=t.getBoundingClientRect(),s=Math.max(r.width,r.height),x=document.createElement('span');x.className='rip';x.style.cssText=`width:${s}px;height:${s}px;left:${e.clientX-r.left-s/2}px;top:${e.clientY-r.top-s/2}px`;t.appendChild(x);setTimeout(()=>x.remove(),650)}},true);
+const snd=()=>{$('#snd').textContent=mute?'🔇':'🔊'};$('#snd').onclick=()=>{mute=!mute;try{localStorage.setItem('medmute',mute?'1':'0')}catch(e){}snd();if(!mute)tone(620,.1,.05)};snd();
+// ---- навигация ----
+const view=h=>{clearInterval(heroT);app.innerHTML='<div class="view">'+h+'</div>';window.scrollTo({top:0})};
+function navAuth(){$('#nav-auth').textContent=S?'Кабинет':'Войти';$('#nav-auth').dataset.go=S?'dash':'login';$('#who').textContent=S?S.nick:''}
+document.querySelectorAll('nav [data-go]').forEach(a=>a.onclick=()=>go(a.dataset.go));$('#brand').onclick=()=>go('home');
+function go(v,x){({home,depts,login:()=>auth(x),dash})[v]()}
+const ART=`<svg viewBox="0 0 400 400"><defs><radialGradient id="g" cx="40%" cy="30%" r="80%"><stop offset="0" stop-color="#f25a5a"/><stop offset=".6" stop-color="#d3343a"/><stop offset="1" stop-color="#9f232a"/></radialGradient></defs><circle cx="200" cy="200" r="190" fill="url(#g)"/><g fill="none" stroke="#1a0d0f" stroke-linecap="round" opacity=".9"><path d="M200 70V350" stroke-width="13"/><path d="M200 335C120 305 285 275 200 245S120 185 200 155 150 110 200 95" stroke-width="12"/><path d="M200 92C160 70 120 70 80 92M200 92C240 70 280 70 320 92" stroke-width="7"/><path d="M200 102C165 90 135 92 105 108M200 102C235 90 265 92 295 108" stroke-width="5" opacity=".7"/></g><circle cx="200" cy="64" r="11" fill="#1a0d0f" opacity=".9"/></svg>`;
+const SL=[['Единый портал','MED<br>DEPARTAMENTS','Современный и удобный портал медицинских отделов: регистрация сотрудников, формы и архивы в одном месте.','Войти','login'],
+['Отделы','СЕМЬ<br>ОТДЕЛОВ','Морг, Псих.Диспансер, Военные врачи, Лаборатория, Школьные врачи, Терапевтическое отделение и Отдел персонала.','Выбрать отдел','depts'],
+['Архивы','АРХИВ<br>ПО ФОРМЕ','Заполните форму своего отдела, и архив автоматически отправится в канал отдела.','Начать','login']];
+function home(){let i=0;view(`<div class="hero"><div class="art">${ART}</div><div class="half"></div><div class="txt slide" id="sl"></div><div class="prog"><span id="pn">01</span><b><i id="pb"></i></b><span>0${SL.length}</span></div></div>`);
+ const draw=()=>{const s=SL[i];$('#sl').className='txt';void $('#sl').offsetWidth;$('#sl').className='txt slide';$('#sl').innerHTML=`<div class="lab">${s[0]}</div><h1>${s[1]}</h1><p>${s[2]}</p><button class="go" id="gobtn"><span>→</span>${s[3]}</button>`;$('#pn').textContent='0'+(i+1);const b=$('#pb');b.style.animation='none';void b.offsetWidth;b.style.animation='';$('#gobtn').onclick=()=>go(s[4]==='login'&&S?'dash':s[4])};
+ draw();heroT=setInterval(()=>{i=(i+1)%SL.length;draw()},6000)}
+
+async function load(){if(CFG)return;CFG=await (await fetch('portal.json',{cache:'no-store'})).json();VAULT=await (await fetch('vault.json',{cache:'no-store'})).json();
+ CFG.departments.forEach(d=>{ROLES[d.id+'_worker']={id:d.id+'_worker',name:d.worker,dept:d.id,kind:'worker'};if(d.head)ROLES[d.id+'_head']={id:d.id+'_head',name:d.head,dept:d.id,kind:'head'}});CFG.admins.forEach(a=>ROLES[a.id]={id:a.id,name:a.name,dept:null,kind:'admin'})}
+async function depts(){await load();view(`<div class="sec"><h2>Отделы</h2><p class="sub">Выберите отдел, чтобы войти.</p><div class="grid">${CFG.departments.map(d=>`<div class="card click" data-d="${d.id}"><h3><span class="dot"></span>${esc(d.name)}</h3><small>${esc(d.worker)}${d.head?' · '+esc(d.head):''}</small></div>`).join('')}<div class="card click" data-d="admin"><h3><span class="dot"></span>Администрация</h3><small>Главный врач · Куратор Отделов</small></div></div></div>`);
+ document.querySelectorAll('.card.click').forEach(c=>c.onclick=()=>S?dash():auth(c.dataset.d))}
+// ---- вход ----
+async function auth(deptId){await load();if(S&&!deptId)return dash();let dep=deptId||null,role=null;
+ const roles=()=>{if(dep==='admin')return CFG.admins.map(a=>({id:a.id,n:a.name}));const d=CFG.departments.find(x=>x.id===dep);if(!d)return[];return[{id:d.id+'_worker',n:d.worker}].concat(d.head?[{id:d.id+'_head',n:d.head}]:[])};
+ const draw=()=>{const rs=roles();if(!rs.some(r=>r.id===role))role=rs.length?rs[0].id:null;
+  view(`<div class="sec"><div class="form"><h2>Вход</h2><p class="sub">Выберите отдел и должность, введите никнейм и ключ доступа.</p>
+  <label>Отдел</label><select id="dep"><option value="">— выберите —</option>${CFG.departments.map(d=>`<option value="${d.id}"${dep===d.id?' selected':''}>${esc(d.name)}</option>`).join('')}<option value="admin"${dep==='admin'?' selected':''}>Администрация</option></select>
+  ${rs.length?`<label>Должность</label><div class="seg">${rs.map(r=>`<button type="button" class="${r.id===role?'on':''}" data-r="${r.id}">${esc(r.n)}</button>`).join('')}</div>`:''}
+  <label>Никнейм</label><input id="nick" maxlength="32" autocomplete="username"><label>Ключ доступа</label><input id="key" type="password" autocomplete="off"><div class="err" id="e"></div><button class="btn" id="ok">Войти</button></div></div>`);
+  $('#dep').onchange=e=>{dep=e.target.value||null;role=null;const n=$('#nick').value;draw();$('#nick').value=n};
+  document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{role=b.dataset.r;document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x===b))});
+  const submit=async()=>{const e=$('#e'),b=$('#ok'),nick=$('#nick').value.trim(),key=$('#key').value.trim();e.textContent='';if(!role){e.textContent='Выберите отдел и должность.';sErr();return}if(nick.length<2||!key){e.textContent='Введите никнейм и ключ доступа.';sErr();return}
+   b.disabled=true;b.textContent='Проверка…';const ent=VAULT.entries.find(x=>x.r===role),p=ent?await unseal(key,ent):null;
+   if(!p){e.textContent='Неверный ключ доступа для выбранной должности.';b.disabled=false;b.textContent='Войти';sErr();return}
+   S={nick,role,webhooks:p.webhooks||{},keys:p.keys||null};saveS();navAuth();sOk();dash()};
+  $('#ok').onclick=submit;$('#key').onkeydown=e=>{if(e.key==='Enter')submit()}};draw()}
+// ---- кабинет ----
+let DEP=null,TAB='form';const myDepts=()=>ROLES[S.role].kind==='admin'?CFG.departments:[CFG.departments.find(d=>d.id===ROLES[S.role].dept)];
+async function dash(){await load();if(!S)return go('login');const R=ROLES[S.role],ds=myDepts();if(!DEP||!ds.some(d=>d.id===DEP))DEP=ds[0].id;
+ const tabs=[['form','Создать архив'],['hist','Мои архивы']].concat(S.role==='chief'?[['setup','Настройка']]:[]);if(!tabs.some(t=>t[0]===TAB))TAB='form';
+ view(`<div class="sec"><div class="row" style="justify-content:space-between"><div><h2 style="margin:0">${esc(R.kind==='admin'?'Все отделы':ds[0].name)}</h2><p class="sub" style="margin:4px 0 0">${esc(S.nick)} · ${esc(R.name)}</p></div><button class="btn ghost sm" id="out">Выйти</button></div>
+ ${ds.length>1?`<div style="max-width:320px"><label>Отдел</label><select id="dsel">${ds.map(d=>`<option value="${d.id}"${d.id===DEP?' selected':''}>${esc(d.name)}</option>`).join('')}</select></div>`:''}
+ <div class="tabs">${tabs.map(t=>`<button data-t="${t[0]}" class="${t[0]===TAB?'on':''}">${t[1]}</button>`).join('')}</div><div id="tab"></div></div>`);
+ $('#out').onclick=()=>{S=null;saveS();navAuth();go('home')};if($('#dsel'))$('#dsel').onchange=e=>{DEP=e.target.value;dash()};
+ document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{TAB=b.dataset.t;dash()});({form:tForm,hist:tHist,setup:tSetup})[TAB]()}
+const fmt=t=>t?new Date(t).toLocaleString('ru-RU'):'—';
+// ---- Discord ----
+function embeds(a){const fields=[];for(const v of a.values){const t=String(v.value||'—');const parts=t.match(/[\s\S]{1,1000}/g)||['—'];parts.forEach((p,i)=>fields.push({name:(v.label+(i?' (прод.)':'')).slice(0,250),value:p,inline:false}))}
+ const out=[];let cur=null,size=0;const mk=()=>({title:out.length?undefined:(a.title+' № '+a.id).slice(0,250),color:0xe0393e,fields:[]});
+ for(const f of fields){const l=f.name.length+f.value.length;if(!cur||cur.fields.length>=24||size+l>5200){cur=mk();out.push(cur);size=0}cur.fields.push(f);size+=l}
+ if(!cur){cur=mk();out.push(cur)}out[0].description='**Отдел:** '+a.deptName+'\n**Автор:** '+a.author+' ('+a.roleName+')';
+ const last=out[out.length-1];last.footer={text:'MED Departaments · № '+a.id};last.timestamp=new Date(a.created).toISOString();return out.slice(0,10)}
+async function toDiscord(a){const url=S.webhooks[a.dept];if(!url)throw new Error('Вебхук отдела не настроен (его добавляет Главный врач во вкладке «Настройка»)');
+ const fd=new FormData();fd.append('payload_json',JSON.stringify({username:'MED Departaments',embeds:embeds(a)}));
+ let r;try{r=await fetch(url+(url.includes('?')?'&':'?')+'wait=true',{method:'POST',body:fd})}catch(e){throw new Error('Не удалось связаться с Discord. Если Discord заблокирован у вас, включите VPN. Проверьте также, не сообщение ли уже пришло в канал.')}
+ if(!r.ok)throw new Error('Discord ответил: HTTP '+r.status)}
+const hist=()=>{try{return JSON.parse(localStorage.getItem('medhist')||'[]')}catch(e){return[]}},saveH=h=>{try{localStorage.setItem('medhist',JSON.stringify(h.slice(-200)))}catch(e){}};
+async function tForm(){const el=$('#tab'),d=CFG.departments.find(x=>x.id===DEP),f=d.form;
+ el.innerHTML=`<div class="form" style="margin:0;max-width:640px"><h3 style="font-size:20px;font-weight:800;margin:0 0 4px">${esc(f.title)}</h3><p class="sub">Отдел: ${esc(d.name)}. После отправки архив уходит в канал отдела.</p>
+ ${f.fields.map(x=>`<label>${esc(x.label)}${x.required?' *':''}</label>${x.type==='textarea'?`<textarea data-f="${x.id}" rows="4"></textarea>`:x.type==='select'?`<select data-f="${x.id}"><option value="">— выберите —</option>${x.options.map(o=>`<option>${esc(o)}</option>`).join('')}</select>`:`<input data-f="${x.id}" type="${x.type==='date'?'date':'text'}">`}`).join('')}
+ <div class="err" id="e"></div><button class="btn" id="send">Отправить архив</button></div>`;
+ $('#send').onclick=async()=>{const e=$('#e'),b=$('#send'),vals=[];e.className='err';e.textContent='';
+  for(const x of f.fields){const el2=document.querySelector(`[data-f="${x.id}"]`),v=el2.value.trim().slice(0,4000);if(x.required&&!v){e.textContent='Заполните поле: '+x.label;sErr();return}vals.push({label:x.label,value:v})}
+  b.disabled=true;const a={id:Math.random().toString(36).slice(2,8).toUpperCase(),dept:d.id,deptName:d.name,title:f.title,author:S.nick,roleName:ROLES[S.role].name,created:Date.now(),values:vals,status:'pending',error:''};
+  try{await toDiscord(a);a.status='sent';e.className='err okmsg';e.textContent='Архив № '+a.id+' отправлен в Discord ✓';sOk();document.querySelectorAll('[data-f]').forEach(x=>x.value='')}catch(x){a.status='failed';a.error=x.message;e.textContent='Архив № '+a.id+' сохранён в этом браузере, но не отправлен: '+x.message;sErr()}
+  const h=hist();h.push(a);saveH(h);b.disabled=false}}
+async function tHist(){const el=$('#tab'),L=hist().filter(a=>a.dept===DEP).reverse();
+ el.innerHTML=`<p class="mu" style="font-size:13px">Здесь видны архивы, созданные в этом браузере. Общий архив отдела хранится в Discord-канале.</p>`+(L.length?L.map(a=>`<details><summary>№ ${esc(a.id)} · ${esc(a.title)} · ${fmt(a.created)} <span class="pill ${a.status}">${a.status==='sent'?'отправлен':'не отправлен'}</span></summary>${a.values.map(v=>`<div class="kv"><b>${esc(v.label)}</b><p>${esc(v.value||'—')}</p></div>`).join('')}${a.status!=='sent'?`<p class="err">${esc(a.error||'')}</p><button class="btn sm" data-r="${esc(a.id)}">Повторить отправку</button>`:''}</details>`).join(''):'<p class="mu">Архивов пока нет.</p>');
+ document.querySelectorAll('[data-r]').forEach(b=>b.onclick=async()=>{b.disabled=true;const h=hist(),a=h.find(x=>x.id===b.dataset.r);try{await toDiscord(a);a.status='sent';a.error='';sOk()}catch(x){a.error=x.message;sErr()}saveH(h);tHist()})}
+// ---- настройка (Главный врач) ----
+async function tSetup(){const el=$('#tab'),keys={...S.keys},wh={...S.webhooks};let dirty=false;
+ const roleRows=Object.values(ROLES).map(r=>[r.id,r.name,r.dept?CFG.departments.find(d=>d.id===r.dept).name:'Администрация']);
+ el.innerHTML=`<div class="card"><h3>Вебхуки Discord по отделам</h3><small>Вставьте ссылку вебхука канала каждого отдела. Затем нажмите «Создать vault.json» внизу.</small><table style="margin-top:10px">${CFG.departments.map(d=>`<tr><td style="width:190px">${esc(d.name)}</td><td><input data-h="${d.id}" value="${esc(wh[d.id]||'')}" placeholder="https://discord.com/api/webhooks/…"></td><td style="width:110px"><button class="btn ghost sm" data-ht="${d.id}">Проверить</button></td></tr>`).join('')}</table><div class="err" id="he"></div></div>
+ <div class="card" style="margin-top:14px"><h3>Ключи доступа</h3><small>Видны только Главному врачу. После смены ключа его нужно передать сотрудникам.</small><div style="overflow-x:auto"><table style="margin-top:10px"><tr><th>Отдел</th><th>Должность</th><th>Ключ</th><th></th></tr>${roleRows.map(r=>`<tr><td>${esc(r[2])}</td><td>${esc(r[1])}</td><td><code id="k_${r[0]}">${esc(keys[r[0]]||'')}</code></td><td><button class="btn ghost sm" data-kr="${r[0]}">Сменить</button></td></tr>`).join('')}</table></div></div>
+ <div class="card" style="margin-top:14px"><h3>Сохранение настроек</h3><small>Сайт собирает файл vault.json, в котором вебхуки и ключи зашифрованы. Скачайте его и замените файл vault.json в вашем репозитории на GitHub, через 1–2 минуты изменения заработают у всех.</small><div class="row" style="margin-top:12px"><button class="btn" id="mk">Создать vault.json</button></div><div class="err" id="me"></div></div>`;
+ document.querySelectorAll('[data-h]').forEach(i=>i.oninput=()=>{dirty=true});
+ document.querySelectorAll('[data-ht]').forEach(b=>b.onclick=async()=>{const id=b.dataset.ht,url=document.querySelector(`[data-h="${id}"]`).value.trim(),he=$('#he');he.className='err';he.textContent='';if(!/^https:\/\/[^\s]+\/api\/webhooks\/[^\s]+$/.test(url)){he.textContent='Это не похоже на ссылку вебхука Discord.';sErr();return}
+  const old=S.webhooks[id];S.webhooks[id]=url;b.disabled=true;try{await toDiscord({dept:id,deptName:CFG.departments.find(d=>d.id===id).name,title:'Проверка связи',id:'TEST',author:S.nick,roleName:ROLES[S.role].name,created:Date.now(),values:[{label:'Сообщение',value:'Тестовое сообщение портала MED Departaments'}]});he.className='err okmsg';he.textContent='Тестовое сообщение отправлено ✓';sOk()}catch(x){he.textContent=x.message;sErr()}S.webhooks[id]=old;b.disabled=false});
+ document.querySelectorAll('[data-kr]').forEach(b=>b.onclick=()=>{if(b.dataset.s!=='1'){b.dataset.s='1';b.textContent='Точно?';return}const k=genKey();keys[b.dataset.kr]=k;$('#k_'+b.dataset.kr).textContent=k;b.textContent='Сменить';b.dataset.s='';dirty=true;sOk()});
+ $('#mk').onclick=async()=>{const me=$('#me'),b=$('#mk');me.className='err';me.textContent='';const w={};
+  for(const d of CFG.departments){const v=document.querySelector(`[data-h="${d.id}"]`).value.trim();if(v){if(!/^https:\/\/[^\s]+\/api\/webhooks\/[^\s]+$/.test(v)){me.textContent='Неверная ссылка вебхука: '+d.name;sErr();return}w[d.id]=v}}
+  b.disabled=true;b.textContent='Шифрование…';try{const v=await buildVault(keys,w),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(v)],{type:'application/json'}));a.download='vault.json';a.click();me.className='err okmsg';me.textContent='Файл vault.json создан. Загрузите его в репозиторий на GitHub вместо старого.';sOk()}catch(x){me.textContent='Ошибка: '+x.message;sErr()}b.disabled=false;b.textContent='Создать vault.json'}}
+// ---- старт ----
+(async()=>{try{await load()}catch(e){app.innerHTML='<div class="sec"><p class="err">Не удалось загрузить настройки портала.</p></div>';return}navAuth();home()})();
+</script></body></html>

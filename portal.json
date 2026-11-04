@@ -1,0 +1,59 @@
+{
+ "title": "MED Departaments",
+ "departments": [
+  {"id":"morgue","name":"Морг","worker":"Патологоанатом","head":"Заведующий Моргом",
+   "form":{"title":"Протокол вскрытия","fields":[
+    {"id":"deceased","label":"ФИО / никнейм умершего","type":"text","required":true},
+    {"id":"dod","label":"Дата и время смерти","type":"text","required":true},
+    {"id":"place","label":"Место обнаружения","type":"text"},
+    {"id":"cause","label":"Причина смерти","type":"text","required":true},
+    {"id":"findings","label":"Результаты вскрытия","type":"textarea","required":true},
+    {"id":"conclusion","label":"Заключение патологоанатома","type":"textarea","required":true},
+    {"id":"notes","label":"Особые отметки","type":"textarea"}]}},
+  {"id":"psych","name":"Псих.Диспансер","worker":"Работник Псих.Диспансера","head":"Заведующий Псих.Диспансером",
+   "form":{"title":"Карта осмотра пациента","fields":[
+    {"id":"patient","label":"Пациент","type":"text","required":true},
+    {"id":"date","label":"Дата приёма","type":"date","required":true},
+    {"id":"complaints","label":"Жалобы и состояние","type":"textarea","required":true},
+    {"id":"diagnosis","label":"Диагноз / заключение","type":"textarea","required":true},
+    {"id":"plan","label":"Назначения","type":"textarea"},
+    {"id":"notes","label":"Рекомендации","type":"textarea"}]}},
+  {"id":"military","name":"Военные врачи","worker":"Военный врач","head":"Заведующий Военными врачами",
+   "form":{"title":"Военно-врачебное заключение","fields":[
+    {"id":"person","label":"Призывник / военнослужащий","type":"text","required":true},
+    {"id":"date","label":"Дата осмотра","type":"date","required":true},
+    {"id":"exam","label":"Результаты осмотра","type":"textarea","required":true},
+    {"id":"cat","label":"Категория годности","type":"select","options":["А — годен","Б — годен с ограничениями","В — ограниченно годен","Г — временно не годен","Д — не годен"],"required":true},
+    {"id":"notes","label":"Примечания","type":"textarea"}]}},
+  {"id":"lab","name":"Лаборатория","worker":"Лаборант","head":"Руководитель Лаборатории",
+   "form":{"title":"Результаты анализов","fields":[
+    {"id":"patient","label":"Пациент","type":"text","required":true},
+    {"id":"kind","label":"Вид анализа","type":"text","required":true},
+    {"id":"date","label":"Дата","type":"date","required":true},
+    {"id":"results","label":"Результаты","type":"textarea","required":true},
+    {"id":"conclusion","label":"Заключение","type":"textarea"}]}},
+  {"id":"personnel","name":"Отдел персонала","worker":"Заведующий персоналом","head":null,
+   "form":{"title":"Кадровая запись","fields":[
+    {"id":"employee","label":"Сотрудник","type":"text","required":true},
+    {"id":"post","label":"Должность / отдел","type":"text"},
+    {"id":"type","label":"Тип записи","type":"select","options":["Приём на работу","Перевод","Повышение","Выговор","Отпуск","Увольнение","Другое"],"required":true},
+    {"id":"date","label":"Дата","type":"date","required":true},
+    {"id":"desc","label":"Описание","type":"textarea","required":true}]}},
+  {"id":"school","name":"Школьные врачи","worker":"Школьный врач","head":"Заведующий Школьными врачами",
+   "form":{"title":"Осмотр ученика","fields":[
+    {"id":"student","label":"Ученик","type":"text","required":true},
+    {"id":"class","label":"Класс / школа","type":"text"},
+    {"id":"date","label":"Дата осмотра","type":"date","required":true},
+    {"id":"complaints","label":"Жалобы","type":"textarea"},
+    {"id":"conclusion","label":"Заключение","type":"textarea","required":true},
+    {"id":"notes","label":"Рекомендации","type":"textarea"}]}},
+  {"id":"therapy","name":"Терапевтическое отделение","worker":"Терапевт","head":"Заведующий Терапевтическим отделением",
+   "form":{"title":"Приём терапевта","fields":[
+    {"id":"patient","label":"Пациент","type":"text","required":true},
+    {"id":"date","label":"Дата приёма","type":"date","required":true},
+    {"id":"complaints","label":"Жалобы","type":"textarea","required":true},
+    {"id":"diagnosis","label":"Диагноз","type":"textarea","required":true},
+    {"id":"plan","label":"Назначения","type":"textarea"}]}}
+ ],
+ "admins": [{"id":"chief","name":"Главный врач"},{"id":"curator","name":"Куратор Отделов"}]
+}
