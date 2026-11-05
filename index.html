@@ -87,9 +87,9 @@ const packS=async o=>{const k=S&&S.dk&&S.dk._s;return JSON.stringify(k?await enc
 const unpackS=async t=>{const j=JSON.parse(t);if(j&&j.iv&&j.c){const k=S&&S.dk&&S.dk._s;if(!k)throw new Error('нет ключа состояния');return decJ(await dkImport(k),j)}return j};
 const normKeys=k=>{const o={};for(const r of Object.keys(ROLES)){const v=(k||{})[r];o[r]=Array.isArray(v)?v.slice():(v?[v]:[])}return o};
 const slotsOf=r=>ROLES[r].kind==='worker'?15:1;
-async function buildVault(keys,wh,db,dk,onp){const entries=[],tot=Object.keys(ROLES).reduce((a,r)=>a+keys[r].length,0);let n=0;
- for(const r of Object.keys(ROLES)){const R=ROLES[r];let hooks={},dks={};if(R.kind==='admin'){hooks={...wh};dks={...dk}}else{if(wh[R.dept])hooks={[R.dept]:wh[R.dept]};dks={[R.dept]:dk[R.dept],_s:dk._s}}
-  for(let i=0;i<keys[r].length;i++){const p={role:r,n:i+1,webhooks:hooks,db:db||null,dk:dks};if(r==='chief')p.keys=keys;entries.push({r,n:i+1,...await seal(keys[r][i],p)});n++;if(onp)onp(n,tot)}}
+async function buildVault(keys,wh,rwh,db,dk,onp){const entries=[],tot=Object.keys(ROLES).reduce((a,r)=>a+keys[r].length,0);let n=0;
+ for(const r of Object.keys(ROLES)){const R=ROLES[r];let hooks={},dks={},rh={};if(R.kind==='admin'){hooks={...wh};rh={...rwh};dks={...dk}}else{if(R.kind==='head'&&rwh[R.dept])rh={[R.dept]:rwh[R.dept]};if(wh[R.dept])hooks={[R.dept]:wh[R.dept]};dks={[R.dept]:dk[R.dept],_s:dk._s}}
+  for(let i=0;i<keys[r].length;i++){const p={role:r,n:i+1,webhooks:hooks,rwebhooks:rh,db:db||null,dk:dks};if(r==='chief')p.keys=keys;entries.push({r,n:i+1,...await seal(keys[r][i],p)});n++;if(onp)onp(n,tot)}}
  return{v:2,entries}}
 // ---- звук и анимация нажатия ----
 let AC=null,mute=false;try{mute=localStorage.getItem('medmute')==='1'}catch(e){}
@@ -114,7 +114,7 @@ function home(){let i=0;view(`<div class="hero"><div class="art">${ART}</div><di
 
 async function load(){if(CFG)return;CFG=await (await fetch('portal.json?t='+Date.now(),{cache:'no-store'})).json();VAULT=await (await fetch('vault.json?t='+Date.now(),{cache:'no-store'})).json();
  CFG.departments.forEach(d=>{ROLES[d.id+'_worker']={id:d.id+'_worker',name:d.worker,dept:d.id,kind:'worker'};if(d.head)ROLES[d.id+'_head']={id:d.id+'_head',name:d.head,dept:d.id,kind:'head'}});CFG.admins.forEach(a=>ROLES[a.id]={id:a.id,name:a.name,dept:null,kind:'admin'});
- if(S){const en=VAULT.entries.find(x=>x.r===S.role&&x.s===S.vs);if(!en){S=null;saveS()}}}
+ if(S){const en=VAULT.entries.find(x=>x.r===S.role&&x.s===S.vs);if(!en){S=null;saveS()}else if(!S.rwebhooks)S.rwebhooks={}}}
 // ---- GitHub как хранилище ----
 const gh={url(p,d){d=d||S.db;return(d.base||'https://api.github.com')+'/repos/'+d.repo+'/contents/'+p.split('/').map(encodeURIComponent).join('/')},
  f(m,p,body,raw,d){d=d||S.db;return fetch(this.url(p,d)+(m==='GET'?'?ref='+encodeURIComponent(d.branch||'main'):''),{method:m,cache:'no-cache',headers:{Authorization:'Bearer '+d.token,Accept:raw?'application/vnd.github.raw+json':'application/vnd.github+json',...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined})},
@@ -150,7 +150,7 @@ async function auth(deptId){await load();if(S&&!deptId)return dash();let dep=dep
   const submit=async()=>{const e=$('#e'),b=$('#ok'),nick=$('#nick').value.trim(),key=$('#key').value.trim();e.textContent='';if(!role){e.textContent='Выберите отдел и должность.';sErr();return}if(nick.length<2||!key){e.textContent='Введите никнейм и ключ доступа.';sErr();return}
    b.disabled=true;b.textContent='Проверка…';let p=null,ent=null;for(const x of VAULT.entries.filter(x=>x.r===role)){p=await unseal(key,x);if(p){ent=x;break}}
    if(!p){e.textContent='Неверный ключ доступа для выбранной должности.';b.disabled=false;b.textContent='Войти';sErr();return}
-   const keyNo=p.n||ent.n||1;S={nick,role,key,keyNo,vs:ent.s,dept:ROLES[role].dept,webhooks:p.webhooks||{},db:p.db||null,dk:p.dk||{},keys:p.keys?normKeys(p.keys):null};
+   const keyNo=p.n||ent.n||1;S={nick,role,key,keyNo,vs:ent.s,dept:ROLES[role].dept,webhooks:p.webhooks||{},rwebhooks:p.rwebhooks||{},db:p.db||null,dk:p.dk||{},keys:p.keys?normKeys(p.keys):null};
    if(S.db){const rv=await getRev();if(rv&&rv.banned[keyId()]){S=null;e.textContent='Этот ключ отключён администрацией.';b.disabled=false;b.textContent='Войти';sErr();return}try{await startSession()}catch(x){}}
    saveS();startPoll();navAuth();sOk();dash()};
   $('#ok').onclick=submit;$('#key').onkeydown=e=>{if(e.key==='Enter')submit()}};draw()}
@@ -182,22 +182,53 @@ async function saveArchive(a,blob){const dk=await dkImport(S.dk[a.dept]),base='a
  const meta={id:a.id,fid:a.fid,dept:a.dept,deptName:a.deptName,title:a.title,author:a.author,role:S.role,roleName:a.roleName,keyNo:S.keyNo,key:S.key,created:a.created,values:a.values,msgId:a.msgId||''};
  await gh.put(base+'.p.json',JSON.stringify(await encB(dk,new Uint8Array(await blob.arrayBuffer()))));await gh.put(base+'.m.json',JSON.stringify(await encJ(dk,meta)))}
 // ---- форма архива ----
+const pad=n=>String(n).padStart(2,'0'),fdt=v=>{const d=new Date(v);return pad(d.getDate())+'.'+pad(d.getMonth()+1)+'.'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes())};
+const qf=id=>document.querySelector(`[data-f="${id}"]`);
+const fieldHtml=x=>{const lab=`<label>${esc(x.label)}${x.required?' *':''}</label>`;
+ if(x.type==='period')return lab+`<div class="row" style="gap:12px"><div style="flex:1 1 220px"><small class="mu">С (дата и время)</small><input type="datetime-local" data-f="${x.id}-from"></div><div style="flex:1 1 220px"><small class="mu">По (дата и время)</small><input type="datetime-local" data-f="${x.id}-to"></div></div>`;
+ return lab+(x.type==='textarea'?`<textarea data-f="${x.id}" rows="4"></textarea>`:x.type==='select'?`<select data-f="${x.id}"><option value="">— выберите —</option>${x.options.map(o=>`<option>${esc(o)}</option>`).join('')}</select>`:`<input data-f="${x.id}" type="${x.type==='date'?'date':'text'}">`)};
 async function tForm(){const el=$('#tab'),d=CFG.departments.find(x=>x.id===DEP),f=d.form;
  el.innerHTML=`<div class="form" style="margin:0;max-width:640px"><h3 style="font-size:20px;font-weight:800;margin:0 0 4px">${esc(f.title)}</h3><p class="sub">Отдел: ${esc(d.name)}. После отправки архив уходит в канал отдела.</p>
- ${f.fields.map(x=>`<label>${esc(x.label)}${x.required?' *':''}</label>${x.type==='textarea'?`<textarea data-f="${x.id}" rows="4"></textarea>`:x.type==='select'?`<select data-f="${x.id}"><option value="">— выберите —</option>${x.options.map(o=>`<option>${esc(o)}</option>`).join('')}</select>`:`<input data-f="${x.id}" type="${x.type==='date'?'date':'text'}">`}`).join('')}
+ ${f.fields.map(fieldHtml).join('')}
  <label>Фото с отыгровками *</label><input type="file" id="photo" accept="image/*"><p class="mu" style="font-size:12px;margin:6px 0 0">Обязательно прикрепите фото с РП-отыгровками. Оно публикуется вместе с архивом.</p><img id="pv" class="thumb hide" alt="">
  <div class="err" id="e"></div><button class="btn" id="send">Отправить архив</button></div>`;
  $('#photo').onchange=e=>{const fl=e.target.files[0],pv=$('#pv');if(fl){pv.src=URL.createObjectURL(fl);pv.classList.remove('hide')}else pv.classList.add('hide')};
  $('#send').onclick=async()=>{const e=$('#e'),b=$('#send'),vals=[];e.className='err';e.textContent='';
-  for(const x of f.fields){const v=document.querySelector(`[data-f="${x.id}"]`).value.trim().slice(0,4000);if(x.required&&!v){e.textContent='Заполните поле: '+x.label;sErr();return}vals.push({label:x.label,value:v})}
+  for(const x of f.fields){let v;
+   if(x.type==='period'){const t1=qf(x.id+'-from').value,t2=qf(x.id+'-to').value;if(t1&&t2){if(new Date(t2)<=new Date(t1)){e.textContent='Конец периода должен быть позже начала: '+x.label;sErr();return}v='с '+fdt(t1)+' по '+fdt(t2)}else if(t1||t2){e.textContent='Укажите начало и конец периода: '+x.label;sErr();return}else v=''}
+   else{v=qf(x.id).value.trim().slice(0,4000);if(x.type==='date'&&v)v=v.split('-').reverse().join('.')}
+   if(x.required&&!v){e.textContent='Заполните поле: '+x.label;sErr();return}vals.push({label:x.label,value:v})}
   const file=$('#photo').files[0];if(!file){e.textContent='Прикрепите фото с РП-отыгровками (обязательно).';sErr();return}
-  b.disabled=true;b.textContent='Отправка…';let ok=false;
+  b.disabled=true;b.textContent='Отправка…';
   try{const blob=await shrink(file),ts=Date.now(),id=rand(6),a={id,fid:ts.toString(36).padStart(9,'0')+'-'+id,dept:d.id,deptName:d.name,title:f.title,author:S.nick,roleName:ROLES[S.role].name,created:ts,values:vals};
-   a.msgId=await toDiscord(a,blob);ok=true;let warn='';if(S.db){try{await saveArchive(a,blob)}catch(x){warn=' Но в хранилище записать не удалось: '+x.message}}
+   a.msgId=await toDiscord(a,blob);let warn='';if(S.db){try{await saveArchive(a,blob)}catch(x){warn=' Но в хранилище записать не удалось: '+x.message}}
    const h=hist();h.push({id,dept:d.id,title:f.title,created:ts,values:vals});saveH(h);
    e.className='err okmsg';e.textContent='Архив № '+id+' отправлен в Discord ✓'+warn;sOk();document.querySelectorAll('[data-f]').forEach(x=>x.value='');$('#photo').value='';$('#pv').classList.add('hide')}
   catch(x){e.textContent='Не отправлено: '+x.message+' (введённые данные сохранены, можно повторить).';sErr()}
   b.disabled=false;b.textContent='Отправить архив'}}
+// ---- проверка архивов (результат уходит в отдельный канал) ----
+const reviewEmbed=(m,rv,edited)=>{const ok=rv.status==='ok',e={title:'Архив № '+m.id+': '+(ok?'одобрен':'отклонён'),color:ok?0x3ba55d:0xe0393e,
+ description:ok?'Архив № '+m.id+' от **'+m.author+'** был **одобрен** с суммой выплаты в размере **'+rv.amount+'$**.':'Архив № '+m.id+' от **'+m.author+'** был **отклонён** по причине: **'+rv.reason+'**.',
+ fields:[{name:'Отдел',value:m.deptName,inline:true},{name:'Форма',value:m.title,inline:true},{name:'Проверил',value:rv.by+' ('+rv.byRole+')',inline:false}],
+ image:{url:ok?CFG.review.imgOk:CFG.review.imgNo},footer:{text:'MED Departaments'+(edited?' · изменено':'')},timestamp:new Date(rv.at).toISOString()};
+ if(rv.note)e.fields.push({name:'Примечание',value:String(rv.note).slice(0,1000)});return e};
+async function sendReview(m,rv,edit){const hook=(S.rwebhooks||{})[m.dept];if(!hook)throw new Error('Вебхук канала проверки этого отдела не настроен (его добавляет Главный врач во вкладке «Настройка»). Выйдите и войдите заново после обновления vault.json.');
+ const pl=JSON.stringify({username:'MED Departaments',embeds:[reviewEmbed(m,rv,edit)]});
+ if(edit&&rv.msgId){let r;try{r=await fetch(hook+'/messages/'+rv.msgId,{method:'PATCH',headers:{'Content-Type':'application/json'},body:pl})}catch(e){throw new Error('Не удалось связаться с Discord для изменения сообщения.')}
+  if(r.ok)return rv.msgId;if(r.status!==404)throw new Error('Discord ответил: HTTP '+r.status)}
+ const fd=new FormData();fd.append('payload_json',pl);let r;try{r=await fetch(hook+'?wait=true',{method:'POST',body:fd})}catch(e){throw new Error('Не удалось связаться с Discord. Если Discord заблокирован у вас, включите VPN.')}
+ if(!r.ok)throw new Error('Discord ответил: HTTP '+r.status);try{return(await r.json()).id||''}catch(e){return''}}
+const rvLine=rv=>(rv.status==='ok'?'Принято · сумма к выплате: '+rv.amount+'$':'Отклонено · причина: '+rv.reason)+(rv.note?' · примечание: '+rv.note:'');
+function openReview(x,box,dk,reload){const m=x.m;let rv={...(m.review||{})},st=rv.status||'ok';
+ const draw=()=>{box.innerHTML=`<div class="card" style="margin-top:12px"><h3>Проверка архива № ${esc(m.id)}</h3><div class="seg" style="margin-top:8px"><button type="button" data-s="ok" class="${st==='ok'?'on':''}">Одобрить</button><button type="button" data-s="no" class="${st==='no'?'on':''}">Отклонить</button></div>
+  ${st==='ok'?`<label>Сумма к выплате ($) *</label><input type="number" min="0" step="1" id="rv-sum" value="${esc(rv.amount==null?'':rv.amount)}">`:`<label>Причина отклонения *</label><select id="rv-reason"><option value="">— выберите —</option>${CFG.review.reasons.map(r=>`<option${rv.reason===r?' selected':''}>${esc(r)}</option>`).join('')}</select>`}
+  <label>Примечание (необязательно)</label><textarea id="rv-note" rows="3">${esc(rv.note||'')}</textarea><div class="err" id="rv-e"></div><button class="btn" id="rv-send">${m.review?'Сохранить изменения':'Отправить проверку'}</button></div>`;
+  box.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{const n=box.querySelector('#rv-note');if(n)rv.note=n.value;st=b.dataset.s;draw()});
+  box.querySelector('#rv-send').onclick=async()=>{const e=box.querySelector('#rv-e'),btn=box.querySelector('#rv-send');e.className='err';e.textContent='';const note=box.querySelector('#rv-note').value.trim();let amount=null,reason='';
+   if(st==='ok'){const v=box.querySelector('#rv-sum').value;if(v===''||isNaN(+v)||+v<0){e.textContent='Укажите сумму к выплате в долларах.';sErr();return}amount=Math.round(+v*100)/100}else{reason=box.querySelector('#rv-reason').value;if(!reason){e.textContent='Выберите причину отклонения.';sErr();return}}
+   const nrv={status:st,amount,reason,note,by:S.nick,byRole:ROLES[S.role].name,at:Date.now(),msgId:(m.review&&m.review.msgId)||''};btn.disabled=true;
+   try{nrv.msgId=await sendReview(m,nrv,!!m.review);const nm={...m,review:nrv};await gh.put('archives/'+m.dept+'/'+m.fid+'.m.json',JSON.stringify(await encJ(dk,nm)),x.sha);delete CACHE[x.sha];saveCache();sOk();reload()}
+   catch(err){e.textContent=err.message;btn.disabled=false;sErr()}}};draw()}
 // ---- архивы ----
 async function tArch(){const el=$('#tab'),kind=ROLES[S.role].kind;
  if(!S.db){const L=hist().filter(a=>a.dept===DEP).reverse();el.innerHTML=`<div class="note">Общее хранилище не подключено, поэтому здесь видны только архивы, созданные в этом браузере. Подключает хранилище Главный врач во вкладке «Настройка».</div>`+(L.length?L.map(a=>`<details><summary>№ ${esc(a.id)} · ${esc(a.title)} · ${fmt(a.created)}</summary>${a.values.map(v=>`<div class="kv"><b>${esc(v.label)}</b><p>${esc(v.value||'—')}</p></div>`).join('')}</details>`).join(''):'<p class="mu">Архивов пока нет.</p>');return}
@@ -205,14 +236,18 @@ async function tArch(){const el=$('#tab'),kind=ROLES[S.role].kind;
  const dk=S.dk[DEP]?await dkImport(S.dk[DEP]):null;let out=[];
  for(const f of files.slice(0,200)){let m=CACHE[f.sha];if(!m&&dk){try{m=await decJ(dk,JSON.parse(await gh.raw('archives/'+DEP+'/'+f.name)));m.fid=f.name.replace('.m.json','');CACHE[f.sha]=m}catch(e){continue}}if(m)out.push({m,sha:f.sha})}saveCache();
  if(kind==='worker')out=out.filter(x=>norm(x.m.author)===norm(S.nick));
- el.innerHTML=out.length?out.map((x,i)=>{const m=x.m;return `<details data-i="${i}"><summary>№ ${esc(m.id)} · ${esc(m.title)} · ${esc(m.author)} · ${fmt(m.created)}</summary>
+ const canRv=kind!=='worker';
+ el.innerHTML=out.length?out.map((x,i)=>{const m=x.m,rv=m.review;return `<details data-i="${i}"><summary>№ ${esc(m.id)} · ${esc(m.title)} · ${esc(m.author)} · ${fmt(m.created)} ${rv?`<span class="pill ${rv.status==='ok'?'sent':'failed'}">${rv.status==='ok'?'принято':'отклонено'}</span>`:'<span class="pill">не проверен</span>'}</summary>
   ${kind==='admin'?`<div class="kv"><b>Ключ доступа отправителя</b><p>Ключ №${esc(m.keyNo||'?')} · <code>${esc(m.key||'')}</code></p></div>`:''}
   <div class="kv"><b>Должность</b><p>${esc(m.roleName)}</p></div>${m.values.map(v=>`<div class="kv"><b>${esc(v.label)}</b><p>${esc(v.value||'—')}</p></div>`).join('')}
-  <div class="row"><button class="btn ghost sm" data-ph="${i}">Показать фото</button>${kind!=='worker'?`<button class="btn danger sm" data-del="${i}">Удалить</button>`:''}</div><div class="dm err"></div><div class="phbox"></div></details>`}).join(''):'<p class="mu">Архивов пока нет.</p>';
+  ${rv?`<div class="kv"><b>Результат проверки</b><p>${esc(rvLine(rv))}\nПроверил: ${esc(rv.by)} (${esc(rv.byRole)}), ${fmt(rv.at)}</p></div>`:''}
+  <div class="row"><button class="btn ghost sm" data-ph="${i}">Показать фото</button>${canRv?`<button class="btn sm" data-rv="${i}">${rv?'Изменить проверку':'Проверить'}</button><button class="btn danger sm" data-del="${i}">Удалить</button>`:''}</div><div class="dm err"></div><div class="rvbox"></div><div class="phbox"></div></details>`}).join(''):'<p class="mu">Архивов пока нет.</p>';
  document.querySelectorAll('[data-ph]').forEach(b=>b.onclick=async()=>{const x=out[+b.dataset.ph],box=b.closest('details').querySelector('.phbox');b.disabled=true;
   try{const t=await gh.raw('archives/'+DEP+'/'+x.m.fid+'.p.json');if(!t)throw new Error('Фото не найдено');const bytes=await decB(dk,JSON.parse(t));box.innerHTML=`<img class="thumb" src="${URL.createObjectURL(new Blob([bytes],{type:'image/jpeg'}))}" alt="">`}catch(e){box.innerHTML=`<p class="err">${esc(e.message)}</p>`}b.disabled=false});
+ document.querySelectorAll('[data-rv]').forEach(b=>b.onclick=()=>{const x=out[+b.dataset.rv];openReview(x,b.closest('details').querySelector('.rvbox'),dk,tArch)});
  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=async()=>{if(b.dataset.s!=='1'){b.dataset.s='1';b.textContent='Точно удалить?';return}const x=out[+b.dataset.del],dm=b.closest('details').querySelector('.dm');b.disabled=true;let w='';
-  try{const hook=S.webhooks[DEP];if(hook&&x.m.msgId){try{const r=await fetch(hook+'/messages/'+x.m.msgId,{method:'DELETE'});if(!r.ok&&r.status!==404)w='Сообщение в Discord удалить не удалось (HTTP '+r.status+'). '}catch(e){w='Сообщение в Discord удалить не удалось. '}}
+  const kill=async(hook,id,what)=>{if(!hook||!id)return;try{const r=await fetch(hook+'/messages/'+id,{method:'DELETE'});if(!r.ok&&r.status!==404)w+=what+' удалить не удалось (HTTP '+r.status+'). '}catch(e){w+=what+' удалить не удалось. '}};
+  try{await kill(S.webhooks[DEP],x.m.msgId,'Сообщение в Discord');if(x.m.review)await kill((S.rwebhooks||{})[DEP],x.m.review.msgId,'Сообщение о проверке');
    await gh.del('archives/'+DEP+'/'+x.m.fid+'.m.json',x.sha);const p=await gh.meta('archives/'+DEP+'/'+x.m.fid+'.p.json');if(p)await gh.del('archives/'+DEP+'/'+x.m.fid+'.p.json',p.sha);delete CACHE[x.sha];saveCache();sOk();
    if(w){dm.textContent=w+'Архив удалён из хранилища.';b.closest('details').style.opacity=.5}else tArch()}catch(e){dm.textContent='Ошибка: '+e.message;b.disabled=false;sErr()}})}
 // ---- сеансы ----
@@ -231,12 +266,13 @@ async function tSess(){const el=$('#tab');if(!S.db){el.innerHTML='<div class="no
  $('#all').onclick=()=>act(d=>{d.all=Date.now()})}
 // ---- настройка (Главный врач) ----
 async function tSetup(){const el=$('#tab');if(!S.keys){el.innerHTML='<p class="err">Нет доступа.</p>';return}
- const keys=normKeys(S.keys),wh={...S.webhooks},db0=S.db||{repo:'',token:'',branch:'main'},dk={...S.dk};let fresh=0;
+ const keys=normKeys(S.keys),wh={...S.webhooks},rwh={...S.rwebhooks},db0=S.db||{repo:'',token:'',branch:'main'},dk={...S.dk};let fresh=0;
  for(const r of Object.keys(ROLES))while(keys[r].length<slotsOf(r)){keys[r].push(genKey());fresh++}
  CFG.departments.forEach(d=>{if(!dk[d.id])dk[d.id]=newDK()});if(!dk._s)dk._s=newDK();
  const rl=Object.values(ROLES).map(r=>({...r,dn:r.dept?CFG.departments.find(d=>d.id===r.dept).name:'Администрация'}));
  el.innerHTML=`<div class="card"><h3>Вебхуки Discord по отделам</h3><small>Вставьте ссылку вебхука канала каждого отдела.</small><table style="margin-top:10px">${CFG.departments.map(d=>`<tr><td style="width:190px">${esc(d.name)}</td><td><input data-h="${d.id}" value="${esc(wh[d.id]||'')}" placeholder="https://discord.com/api/webhooks/…"></td><td style="width:110px"><button class="btn ghost sm" data-ht="${d.id}">Проверить</button></td></tr>`).join('')}</table><div class="err" id="he"></div></div>
- <div class="card" style="margin-top:14px"><h3>Хранилище данных (приватный репозиторий GitHub)</h3><small>Нужно для общего списка архивов, удаления, отслеживания и завершения сеансов. Создайте приватный репозиторий (например, med-data) и токен GitHub с доступом «Contents: Read and write» только к нему. Без этого сайт работает, но без общих архивов и сеансов.</small>
+ <div class="card" style="margin-top:14px"><h3>Каналы проверки архивов</h3><small>Сюда уходят сообщения о результате проверки (принято или отклонено). У каждого отдела свой канал и свой вебхук.</small><table style="margin-top:10px">${CFG.departments.map(d=>`<tr><td style="width:190px">${esc(d.name)}</td><td><input data-rh="${d.id}" value="${esc(rwh[d.id]||'')}" placeholder="https://discord.com/api/webhooks/…"></td><td style="width:110px"><button class="btn ghost sm" data-rt="${d.id}">Проверить</button></td></tr>`).join('')}</table><div class="err" id="rhe"></div></div>
+ <div class="card" style="margin-top:14px"><h3>Хранилище данных (репозиторий GitHub)</h3><small>Нужно для общего списка архивов, удаления, отслеживания и завершения сеансов. Создайте приватный репозиторий (например, med-data) и токен GitHub с доступом «Contents: Read and write» только к нему. Без этого сайт работает, но без общих архивов и сеансов.</small>
  <div class="row" style="margin-top:12px"><input id="dr" placeholder="владелец/med-data" value="${esc(db0.repo||'')}" style="width:240px"><input id="dt" type="password" placeholder="токен GitHub" value="${esc(db0.token||'')}" style="width:300px"><input id="db" placeholder="ветка" value="${esc(db0.branch||'main')}" style="width:100px"><button class="btn ghost sm" id="dc">Проверить</button></div><div class="err" id="de"></div></div>
  <div class="card" style="margin-top:14px"><h3>Ключи доступа</h3><small>У сотрудников каждого отдела по 15 ключей (№1–15), у заведующих и администрации по одному.${fresh?` Новых ключей создано: ${fresh}. Они заработают после загрузки vault.json.`:''} Видны только Главному врачу.</small><div class="row" style="margin-top:10px"><button class="btn ghost sm" id="kd">Скачать список ключей (txt)</button></div>
  ${rl.map(r=>`<details class="k" style="margin-top:10px"><summary>${esc(r.dn)} · ${esc(r.name)} (${keys[r.id].length})</summary><table style="margin-top:8px">${keys[r.id].map((k,i)=>`<tr><td style="width:50px">№${i+1}</td><td><code id="k_${r.id}_${i}">${esc(k)}</code></td><td style="width:110px"><button class="btn ghost sm" data-kr="${r.id}|${i}">Сменить</button></td></tr>`).join('')}</table></details>`).join('')}</div>
@@ -244,6 +280,8 @@ async function tSetup(){const el=$('#tab');if(!S.keys){el.innerHTML='<p class="e
  const okh=v=>/^(https:\/\/|http:\/\/localhost)[^\s]+\/api\/webhooks\/[^\s]+$/.test(v);
  document.querySelectorAll('[data-ht]').forEach(b=>b.onclick=async()=>{const id=b.dataset.ht,url=document.querySelector(`[data-h="${id}"]`).value.trim(),he=$('#he');he.className='err';he.textContent='';if(!okh(url)){he.textContent='Это не похоже на ссылку вебхука Discord.';sErr();return}
   const old=S.webhooks[id];S.webhooks[id]=url;b.disabled=true;try{await toDiscord({dept:id,deptName:CFG.departments.find(d=>d.id===id).name,title:'Проверка связи',id:'TEST',author:S.nick,roleName:ROLES[S.role].name,created:Date.now(),values:[{label:'Сообщение',value:'Тестовое сообщение портала MED Departaments'}]});he.className='err okmsg';he.textContent='Тестовое сообщение отправлено ✓';sOk()}catch(x){he.textContent=x.message;sErr()}S.webhooks[id]=old;b.disabled=false});
+ document.querySelectorAll('[data-rt]').forEach(b=>b.onclick=async()=>{const id=b.dataset.rt,url=document.querySelector(`[data-rh="${id}"]`).value.trim(),he=$('#rhe');he.className='err';he.textContent='';if(!okh(url)){he.textContent='Это не похоже на ссылку вебхука Discord.';sErr();return}
+  const old=S.rwebhooks[id];S.rwebhooks[id]=url;b.disabled=true;try{await sendReview({id:'TEST',dept:id,deptName:CFG.departments.find(d=>d.id===id).name,title:'Проверка связи',author:S.nick},{status:'ok',amount:0,note:'Тестовое сообщение',by:S.nick,byRole:ROLES[S.role].name,at:Date.now()},false);he.className='err okmsg';he.textContent='Тестовое сообщение отправлено ✓';sOk()}catch(x){he.textContent=x.message;sErr()}S.rwebhooks[id]=old;b.disabled=false});
  const readDb=()=>{const repo=$('#dr').value.trim(),token=$('#dt').value.trim(),branch=$('#db').value.trim()||'main';if(!repo&&!token)return null;const o={repo,token,branch};if(db0.base)o.base=db0.base;return o};
  $('#dc').onclick=async()=>{const de=$('#de'),d=readDb();de.className='err';de.textContent='';if(!d||!/^[\w.-]+\/[\w.-]+$/.test(d.repo)||!d.token){de.textContent='Укажите репозиторий в виде владелец/имя и токен.';sErr();return}
   try{const sha=await gh.put('state/ping.json',JSON.stringify({t:Date.now()}),(await gh.meta('state/ping.json',d).catch(()=>null)||{}).sha,d);de.className='err okmsg';de.textContent='Хранилище работает ✓';sOk()}catch(x){de.textContent='Не получилось: '+x.message+'. Проверьте имя репозитория, токен и права «Contents: Read and write».';sErr()}};
@@ -251,8 +289,9 @@ async function tSetup(){const el=$('#tab');if(!S.keys){el.innerHTML='<p class="e
  $('#kd').onclick=()=>{const t=rl.map(r=>keys[r.id].map((k,i)=>`${r.dn} | ${r.name} | №${i+1} | ${k}`).join('\n')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/plain;charset=utf-8'}));a.download='keys.txt';a.click()};
  $('#mk').onclick=async()=>{const me=$('#me'),b=$('#mk');me.className='err';me.textContent='';const w={};
   for(const d of CFG.departments){const v=document.querySelector(`[data-h="${d.id}"]`).value.trim();if(v){if(!okh(v)){me.textContent='Неверная ссылка вебхука: '+d.name;sErr();return}w[d.id]=v}}
+  const rw={};for(const d of CFG.departments){const v=document.querySelector(`[data-rh="${d.id}"]`).value.trim();if(v){if(!okh(v)){me.textContent='Неверная ссылка вебхука проверки: '+d.name;sErr();return}rw[d.id]=v}}
   const db=readDb();if(db&&(!/^[\w.-]+\/[\w.-]+$/.test(db.repo)||!db.token)){me.textContent='Проверьте параметры хранилища.';sErr();return}
-  b.disabled=true;try{const v=await buildVault(keys,w,db,dk,(n,t)=>{b.textContent='Шифрование '+n+'/'+t+'…'}),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(v)],{type:'application/json'}));a.download='vault.json';a.click();me.className='err okmsg';me.textContent='Файл vault.json создан. Загрузите его в репозиторий на GitHub вместо старого.';sOk()}catch(x){me.textContent='Ошибка: '+x.message;sErr()}b.disabled=false;b.textContent='Создать vault.json'}}
+  b.disabled=true;try{const v=await buildVault(keys,w,rw,db,dk,(n,t)=>{b.textContent='Шифрование '+n+'/'+t+'…'}),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(v)],{type:'application/json'}));a.download='vault.json';a.click();me.className='err okmsg';me.textContent='Файл vault.json создан. Загрузите его в репозиторий на GitHub вместо старого.';sOk()}catch(x){me.textContent='Ошибка: '+x.message;sErr()}b.disabled=false;b.textContent='Создать vault.json'}}
 // ---- старт ----
 (async()=>{try{await load()}catch(e){app.innerHTML='<div class="sec"><p class="err">Не удалось загрузить настройки портала.</p></div>';return}
  if(S&&S.db&&S.sid){const d=await getRev();if(d&&kicked(d)){S=null;saveS();FLASH='Ваш сеанс был завершён администрацией.'}else startPoll()}
